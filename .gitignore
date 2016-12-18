@@ -1,0 +1,4 @@
+*.hdl
+*/*.hdl
+*.dat
+*.out
