@@ -4,3 +4,5 @@
 *.out
 *.asm
 *.vm
+.hack
+.Hack
