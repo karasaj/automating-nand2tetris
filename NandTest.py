@@ -2,20 +2,12 @@
 # Test Script Written by Austin Hamilton
 # This code is currently licensed under the MIT Software License provided in this repository.
 # Began with the help of a nice student
-# Script for testing the assembler.
-# Run it without any arguments to test everything in a predefined list, 
-# or pass -f<filename> and, by default, it will expect a .tst file which it will run in the CPUEmulator.
 
 import os
-import argparse
 import glob
 import platform
 import sys
 from subprocess import call
-
-###########
-# GLOBALS #
-###########
 
 oper_sys = platform.platform()	# Query the OS to figure out whether we're using Windows or something Unix/Linux based.
 								# Only windows needs the .bat, everything else uses .sh
@@ -31,9 +23,9 @@ def dprint(input):
 # Current directory.
 cwd = os.path.dirname(os.path.realpath(__file__))
 
-hdl_files   = [file for file in glob.iglob(cwd + '/**/projects/**/*.hdl', recursive=True)]
-tst_files   = [file for file in glob.iglob(cwd + '/**/projects/**/*.tst', recursive=True)]
-batch_files = [file for file in glob.iglob(cwd + '/**/tools/*.bat', recursive=True)]
+hdl_files   = [file for file in glob.iglob('{path}/**/projects/**/*.hdl'.format(path=cwd), recursive=True)]
+tst_files   = [file for file in glob.iglob('{path}/**/projects/**/*.tst'.format(path=cwd), recursive=True)]
+batch_files = [file for file in glob.iglob('{path}/**/tools/*.bat'.format(path=cwd), recursive=True)]
 sh_files    = ['sh ' + file for file in glob.iglob(cwd + '/**/tools/*.sh', recursive=True)]
 
 if(windows):
@@ -68,6 +60,7 @@ print('This is the Nand2Tetris Automated Test Suite. It can be used to test any 
 
 prj_sel = False
 end = False
+
 while(not end):
 	while (not prj_sel):
 		try:
@@ -81,22 +74,30 @@ while(not end):
 			print('Please provide a valid integer input.')
 
 	if(windows):
-		project = 'projects\\0' + str(tst_project)
+		project = 'projects\\0{}'.format(str(tst_project))
 	else:
-		project = 'projects/0' + str(tst_project)
+		project = 'projects/0{}'.format(str(tst_project))
+	
+	tst_run = [f for f in tst_files if project in f.lower() ]
 
-	if(tst_project <= 3): # We will be testing HDL files only
-		tst_run = [f for f in tst_files if project in f.lower() ]
+	if(tst_project <= 3 or tst_project == 5): # We will be testing HDL files
 		for file in tst_run:
-			test_name = file.replace('/', '---').replace('\\','---').split('---')[-1] # Deal with Windows and Linux/Unix Quickly
-			print("Testing " + test_name + ': ', end='')
+			test_file = file.replace('/', '---').replace('\\','---').split('---')[-1] # Deal with Windows and Linux/Unix Quickly
+			print("Testing " + test_file + ': ', end='')
 			sys.stdout.flush() # Fixing a weird buffer deal with subprocess calls
 			execute = [hardware_sim, file]
 			call(execute)
-	elif(tst_project == 5): # Test of the CPU Emulator
-		pass
 	elif(tst_project == 4 or tst_project == 6): # ASM Projects
-		pass
+		for file in tst_run:
+			asm_file = file.replace('tst','asm')
+			execute = [assembler, asm_file] # Need to Assemble into a Hack file
+			call(execute)
+			sys.stdout.flush()
+			test_file = file.replace('/', '---').replace('\\','---').split('---')[-1] # Deal with Windows and Linux/Unix Quickly
+			print("Testing " + test_file + ': ', end='')
+			sys.stdout.flush() # Fixing a weird buffer deal with subprocess calls
+			execute = [cpu_emulator, file]
+			call(execute)
 	elif(tst_project >= 7): # VM Tests
 		pass
 
