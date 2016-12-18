@@ -2,3 +2,5 @@
 */*.hdl
 *.dat
 *.out
+*.asm
+*.vm
