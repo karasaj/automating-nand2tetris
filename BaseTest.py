@@ -1,5 +1,6 @@
 #!/usr/bin/python
-
+# Test Script Written by Austin Hamilton
+# This code is currently licensed under the MIT Software License
 # Began with the help of a nice student
 # Script for testing the assembler.
 # Run it without any arguments to test everything in a predefined list, 
@@ -9,78 +10,90 @@ import os
 import argparse
 import glob
 import platform
+import sys
+from subprocess import call
 
 ###########
 # GLOBALS #
 ###########
 
-oper_sys = platform.platform()
+oper_sys = platform.platform()	# Query the OS to figure out whether we're using Windows or something Unix/Linux based.
+								# Only windows needs the .bat, everything else uses .sh
 
 windows = 'windows' in oper_sys.lower()
+
+debug = True
+
+def dprint(input):
+	if(debug):
+		print(input)
 
 # Current directory.
 cwd = os.path.dirname(os.path.realpath(__file__))
 
-print('Hello');
-
 hdl_files   = [file for file in glob.iglob(cwd + '/**/projects/**/*.hdl', recursive=True)]
 tst_files   = [file for file in glob.iglob(cwd + '/**/projects/**/*.tst', recursive=True)]
-batch_files = [file for file in glob.iglob(cwd + '/**/tools/*.bat')]
-sh_files    = [file for file in glob.iglob(cwd + '/**/tools/*.sh')]
+batch_files = [file for file in glob.iglob(cwd + '/**/tools/*.bat', recursive=True)]
+sh_files    = ['sh ' + file for file in glob.iglob(cwd + '/**/tools/*.sh', recursive=True)]
 
-vm_emulator  = ''
-cpu_emulator = ''
-assembler    = ''
-hardware_sim = ''
-jack_cmpiler = ''
+if(windows):
+	emulators = batch_files
+else:
+	emulators = sh_files
 
-for f in tst_files:
-	if('VM' in f):
+for f in emulators:
+	# Duplicate .lower() function call so that we don't butcher the file path
+	if('vm' in f.lower()):
 		vm_emulator = f
-	else if('CPU' in f):
+	elif('cpu' in f.lower()):
 		cpu_emulator = f
-	else if('Assembler' in f):
+	elif('assembler' in f.lower()):
 		assembler = f
-	else if('Hardware' in f):
+	elif('hardware' in f.lower()):
 		hardware_sim = f
-	else if('Jack' in f):
+	elif('jack' in f.lower()):
 		jack_cmpiler = f
 
+dprint('VM Emulator: ' + vm_emulator)
+dprint('CPU Emulator: ' + cpu_emulator)
+dprint('Assembler: ' + assembler)
+dprint('Hardware Simulator: ' + hardware_sim)
+dprint('Jack Compiler: ' + jack_cmpiler)
 
+print()
 
+print('This is the Nand2Tetris Automated Test Suite. It can be used to test any solutions for' 
+	+ 'Nand2Tetris. \nThe projects provided in this repository are tailored to Texas A&M\'s '
+	+ 'CSCE 312 class.\n')
 
-########################
-# COMMAND LINE OPTIONS #
-########################
+prj_sel = False
+while (not prj_sel):
+	try:
+		print('Test Project: ', end='')
+		tst_project = int(input())
+		if(tst_project <= 0 or tst_project > 8):
+			print('Current support for Projects 1 to 8 only.')
+		else:
+			prj_sel = True
+	except ValueError:
+		print('Please provide a valid integer input.')
 
-# Configure command line options.
-# http://stackoverflow.com/a/7427376/5415895
+if(windows):
+		project = 'projects\\0' + str(tst_project)
+	else:
+		project = 'projects/0' + str(tst_project)
 
-parser = argparse.ArgumentParser(description='Test the virtual machine.')
-parser.add_argument('-f','--filename', help='The file to translate. If none is given, every file in the tests list will be tested.', required=False)
-parser.add_argument('-v','--vm_dir', help='Directory for vm emulator.', required=False)
-parser.add_argument('-c','--cpu_dir', help='Directory for cpu emulator.', required=False)
-args = vars(parser.parse_args())
-
-
-###################
-# PARSE ARGUMENTS #
-###################
-
-# file = args['filename']
-
-# if args['vm_dir']:
-# 	vm_emulator = args['vm_dir']
-# if args['cpu_dir']:
-# 	cpu_emulator = args['cpu_dir']
-
-# if args['filename']:
-# 	# Run test scripts.
-# 	else:
-# 		print("Testing " + file + " with the CPUEmulator.")
-# 		os.system("bash " + cpu_emulator + " " + file)
-# else:
-# 	for test in tests:
-# 		print("Testing " + test + " with the CPUEmulator.")
-# 		os.system('bash ' + cpu_emulator + " " + test)
-# 		print("\n")
+if(tst_project <= 3): # We will be testing HDL files only
+	tst_run = [f for f in tst_files if project in f.lower() ]
+	for file in tst_run:
+		test_name = file.replace('/', '---').replace('\\','---').split('---')[-1] # Deal with Windows and Linux/Unix Quickly
+		print("Testing " + test_name + ': ', end='')
+		sys.stdout.flush() # Fixing a weird buffer deal with subprocess calls
+		execute = [hardware_sim, file]
+		call(execute)
+elif(tst_project == 5): # Test of the CPU Emulator
+	pass
+elif(tst_project == 4 or tst_project == 6): # ASM Projects
+	pass
+elif(tst_project >= 7): # VM Tests
+	pass
