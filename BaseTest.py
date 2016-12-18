@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # Test Script Written by Austin Hamilton
-# This code is currently licensed under the MIT Software License
+# This code is currently licensed under the MIT Software License provided in this repository.
 # Began with the help of a nice student
 # Script for testing the assembler.
 # Run it without any arguments to test everything in a predefined list, 
@@ -67,33 +67,44 @@ print('This is the Nand2Tetris Automated Test Suite. It can be used to test any 
 	+ 'CSCE 312 class.\n')
 
 prj_sel = False
-while (not prj_sel):
-	try:
-		print('Test Project: ', end='')
-		tst_project = int(input())
-		if(tst_project <= 0 or tst_project > 8):
-			print('Current support for Projects 1 to 8 only.')
-		else:
-			prj_sel = True
-	except ValueError:
-		print('Please provide a valid integer input.')
+end = False
+while(not end):
+	while (not prj_sel):
+		try:
+			print('Test Project: ', end='')
+			tst_project = int(input())
+			if(tst_project <= 0 or tst_project > 8):
+				print('Current support for Projects 1 to 8 only.')
+			else:
+				prj_sel = True
+		except ValueError:
+			print('Please provide a valid integer input.')
 
-if(windows):
+	if(windows):
 		project = 'projects\\0' + str(tst_project)
 	else:
 		project = 'projects/0' + str(tst_project)
 
-if(tst_project <= 3): # We will be testing HDL files only
-	tst_run = [f for f in tst_files if project in f.lower() ]
-	for file in tst_run:
-		test_name = file.replace('/', '---').replace('\\','---').split('---')[-1] # Deal with Windows and Linux/Unix Quickly
-		print("Testing " + test_name + ': ', end='')
-		sys.stdout.flush() # Fixing a weird buffer deal with subprocess calls
-		execute = [hardware_sim, file]
-		call(execute)
-elif(tst_project == 5): # Test of the CPU Emulator
-	pass
-elif(tst_project == 4 or tst_project == 6): # ASM Projects
-	pass
-elif(tst_project >= 7): # VM Tests
-	pass
+	if(tst_project <= 3): # We will be testing HDL files only
+		tst_run = [f for f in tst_files if project in f.lower() ]
+		for file in tst_run:
+			test_name = file.replace('/', '---').replace('\\','---').split('---')[-1] # Deal with Windows and Linux/Unix Quickly
+			print("Testing " + test_name + ': ', end='')
+			sys.stdout.flush() # Fixing a weird buffer deal with subprocess calls
+			execute = [hardware_sim, file]
+			call(execute)
+	elif(tst_project == 5): # Test of the CPU Emulator
+		pass
+	elif(tst_project == 4 or tst_project == 6): # ASM Projects
+		pass
+	elif(tst_project >= 7): # VM Tests
+		pass
+
+	print('Project Testing complete. Do you need to test another project? (y/n): ', end='')
+	prompt = input().lower()
+	while(prompt != 'y' and prompt != 'n'):
+		print('Invalid. (y/n): ', end='')
+		prompt = input().lower()
+	end = (prompt != 'y')
+	prj_sel = False
+
